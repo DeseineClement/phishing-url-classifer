@@ -35,25 +35,29 @@ data = dict()
 label_names = ["phishing", "benign"]
 data['label_names'] = label_names
 
-#labels = [0, 1]
+labels = []
 
 feature_names = ["LongUrl", "Redirection", "HasAt", "IsIPAddress"]
 data['feature_names'] = feature_names
 
-features = [[], [], [], []]
+features = [[]]*4
+print(features)
+p_data = csv.reader(open("data/phishing_urls.csv"))
 
-p_data = csv.DictReader(open("data/phishing_urls.csv"))
+for row, in p_data:
+    features[0].append(featureLongUrl(row))
+    features[1].append(featureRedirection(row))
+    features[2].append(featureFindAt(row))
+    features[3].append(featureFindIP(row))
+    labels.append(0)
 
-for row in p_data:
-    features[0].append(featureLongUrl(row[0]))
-    features[1].append(featureRedirection(row[0]))
-    features[2].append(featureFindAt(row[0]))
-    features[3].append(featureFindIP(row[0]))
 
-#train, test, train_labels, test_labels = train_test_split(features,
-#                                                          labels,
-#                                                          test_size=0.33,
-#                                                          random_state=42)
+print(len(features[1]))
+print(len(labels))
+train, test, train_labels, test_labels = train_test_split(features,
+                                                          labels,
+                                                          test_size=0.33,
+                                                          random_state=42)
 
 #gnb = GaussianNB()
 #model = gnb.fit(train, train_labels)
