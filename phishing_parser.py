@@ -1,4 +1,3 @@
-import sys
 from functools import reduce
 import random as rd
 import pandas as pd
