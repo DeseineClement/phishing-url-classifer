@@ -22,7 +22,7 @@ def parse_url_file(path, is_phising=False):
     return [
         merge_dict(
             {'phishing': int(is_phising)},
-            {key: f(url) for key, f in func.items()})
+            {key: int(f(url)) for key, f in func.items()})
         for url in pd.read_csv(path).pop('url').values
     ]
 
