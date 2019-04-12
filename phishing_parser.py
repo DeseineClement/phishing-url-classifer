@@ -18,10 +18,13 @@ def analysing_url(url, is_phising=False, result=None):
     func = {
         "has_ip_address": ff.feature_find_ip,
         "has_at": ff.feature_find_at,
+        "has_multiple_subdomains": ff.feature_sub_domains,
+        "has_prefix": ff.feature_find_prefix,
         "long_url": ff.feature_long_url,
         "redirection": ff.feature_redirection,
         "cert_origin": ff.feature_check_cert,
-        "cert_expiration": ff.feature_ckeck_cert_expiration
+        "cert_expiration": ff.feature_check_cert_expiration,
+        "unusual_port": ff.feature_check_port
     }
 
     result += [merge_dict(
@@ -30,18 +33,20 @@ def analysing_url(url, is_phising=False, result=None):
     )]
 
 
-def parse_url_file(path, is_phising=False, result=None):
+def parse_url_file(path, is_phising=False, result=None, threads=None):
+    if threads is None:
+        threads = []
+
     print('>> analyzing ' + path)
-    threads = list(map(
+    new_threads = list(map(
         lambda url: threading.Thread(target=analysing_url, args=(url, is_phising, result)),
         pd.read_csv(path).pop('url').values
     ))
 
-    for thread in threads:
+    for thread in new_threads:
         thread.start()
 
-    for thread in threads:
-        thread.join()
+    threads += new_threads
 
 
 def generate_training_file(data, path='data/training.csv'):
@@ -64,10 +69,13 @@ def main():
     ]
 
     parsed_data = []
+    threads = []
     for file in files:
-        parse_url_file(file['path'], file['is_phising'], parsed_data)
+        parse_url_file(file['path'], file['is_phising'], parsed_data, threads)
 
-    rd.shuffle(parsed_data)
+    for thread in threads:
+        thread.join()
+
     generate_training_file(parsed_data)
 
 
