@@ -38,22 +38,14 @@ def feature_check_cert(url):
 
 def feature_ckeck_cert_expiration(url):
     parsed_uri = urlparse(url)
-    result= '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+    result = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
     try:
         exp = whois.whois(result).expiration_date
     except Exception:
         return 1
 
-    print(exp)
     if exp is None or type(exp) is not datetime.datetime:
         return 1
-    if ((exp - datetime.datetime.now()).days < 365):
+    if (exp - datetime.datetime.now()).days < 365:
         return 1
     return 0
-
-
-
-
-
-#print(feature_check_cert("https://stackoverflow.com/questions/9626535/get-protocol-host-name-from-url"))
-#print(feature_ckeck_cert_expiration("https://stackoverflow.com/questions/9626535/get-protocol-host-name-from-url"))
