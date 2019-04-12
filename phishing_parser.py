@@ -76,6 +76,7 @@ def main():
     for thread in threads:
         thread.join()
 
+    rd.shuffle(parsed_data)
     generate_training_file(parsed_data)
 
 
