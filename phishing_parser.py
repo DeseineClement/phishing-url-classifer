@@ -16,7 +16,9 @@ def parse_url_file(path, is_phising=False):
         "has_ip_address": ff.feature_find_ip,
         "has_at": ff.feature_find_at,
         "long_url": ff.feature_long_url,
-        "redirection": ff.feature_redirection
+        "redirection": ff.feature_redirection,
+        "cert_origin": ff.feature_check_cert,
+        "cert_expiration": ff.feature_ckeck_cert_expiration
     }
 
     print('>> analyzing ' + path + '.')
