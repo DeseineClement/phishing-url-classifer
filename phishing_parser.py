@@ -1,8 +1,7 @@
 import random as rd
 import pandas as pd
 import feature_functions as ff
-
-import threading
+from multiprocessing.pool import ThreadPool
 
 
 def merge_dict(dict1, dict2):
@@ -11,10 +10,7 @@ def merge_dict(dict1, dict2):
     return result
 
 
-def analysing_url(url, is_phising=False, result=None):
-    if result is None:
-        result = []
-
+def analysing_url(url, is_phising=False):
     func = {
         "has_ip_address": ff.feature_find_ip,
         "has_at": ff.feature_find_at,
@@ -27,26 +23,23 @@ def analysing_url(url, is_phising=False, result=None):
         "unusual_port": ff.feature_check_port
     }
 
-    result += [merge_dict(
+    return merge_dict(
              {'phishing': int(is_phising)},
              {key: int(f(url)) for key, f in func.items()}
-    )]
+    )
 
 
-def parse_url_file(path, is_phising=False, result=None, threads=None):
-    if threads is None:
-        threads = []
+def helper(arg):
+    return analysing_url(*arg)
+
+
+def parse_url_file(path, is_phising=False, result=None):
 
     print('>> analyzing ' + path)
-    new_threads = list(map(
-        lambda url: threading.Thread(target=analysing_url, args=(url, is_phising, result)),
-        pd.read_csv(path).pop('url').values
-    ))
-
-    for thread in new_threads:
-        thread.start()
-
-    threads += new_threads
+    p = ThreadPool(100)
+    result += p.map(helper, [(url, is_phising) for url in pd.read_csv(path).pop('url').values])
+    p.close()
+    p.join()
 
 
 def generate_training_file(data, path='data/training.csv'):
@@ -69,12 +62,8 @@ def main():
     ]
 
     parsed_data = []
-    threads = []
     for file in files:
-        parse_url_file(file['path'], file['is_phising'], parsed_data, threads)
-
-    for thread in threads:
-        thread.join()
+        parse_url_file(file['path'], file['is_phising'], parsed_data)
 
     rd.shuffle(parsed_data)
     generate_training_file(parsed_data)
